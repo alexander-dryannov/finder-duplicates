@@ -15,9 +15,11 @@ class FinderDuplicates:
 
     """Получаю пути до файлов"""
     def _getting_file_paths(self):
+        file_extension_filters = ['jpg', 'JPG', 'png', 'PNG']
         list_file_paths = []
         for path in self.path_from_where.iterdir():
-            if path.is_file():
+            if path.is_file() and (str(path).partition('.')[-1] != i for i in file_extension_filters):
+
                 list_file_paths.append(str(path))
         return list_file_paths
 
@@ -32,7 +34,7 @@ class FinderDuplicates:
     @staticmethod
     def _get_hashes_from_files(files):
         hashes = {}
-        for i in files:
+        for i in tqdm(files):
             try:
                 with open(i, 'rb') as f:
                     hashes[i] = hashlib.sha224(f.read()).hexdigest()
@@ -50,12 +52,13 @@ class FinderDuplicates:
             except KeyError:
                 reverse_dict[value] = [key]
         for item in list(reverse_dict.values()):
-            if len(item) >= 1:
-                for sub_item in tqdm(item[1:]):
+            if len(item) > 1:
+                for sub_item in tqdm(item[1:], leave=False):
                     Path(sub_item).rename(Path(str(self.path_where) + '/' + sub_item.split("/")[-1]))
 
 
 if __name__ == '__main__':
+    print('Поехали!')
     start_time = time.monotonic()
     FinderDuplicates(sys.argv[2], sys.argv[4]).find_duplicate()
-    print(f'Времени прошло: {(time.monotonic() - start_time):.3f}')
+    print(f'Завершено. Затрачено времени: {(time.monotonic() - start_time):.3f}')
